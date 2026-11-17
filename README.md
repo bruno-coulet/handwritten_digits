@@ -1,7 +1,6 @@
 # Handwritten Digits: From Perceptron to CNN
 
 
-
 Welcome to the **Handwritten Digits** classification repository. This project guides the implementation, evaluation, and web deployment of machine learning and deep learning models to recognize handwritten digits using the MNIST dataset.
 
 
@@ -13,6 +12,7 @@ The goal of this project is to build, evaluate, and deploy deep learning models 
 - **Scikit-learn Baseline**: Establish initial benchmark with classical machine learning models.
 - **Tuned MLP Model**: Achieve **< 2% error** on the test set.
 - **Convolutional Neural Network (CNN)**: Achieve **< 1% error** on the test set.
+- **MLOps & Tracking**: Track hyperparameter experiments with **MLflow** and version model artifacts with **DVC**.
 - **Web Interface**: Deploy a Flask application displaying digit predictions with class confidence probabilities and robust input validation.
 
 
@@ -20,6 +20,17 @@ The goal of this project is to build, evaluate, and deploy deep learning models 
 
 The MNIST dataset consists of 60,000 training images and 10,000 test images of normalized, centered 28x28 pixel grayscale handwritten digits.
 
+### Reference Performance in Literature
+
+| Classifier Type | Architecture / Classifier Details | Error Rate (%) |
+| :--- | :--- | :--- |
+| **Linear Classifier** | Pairwise linear classifier | 7.6% |
+| **Random Forest** | Fast Unified Random Forests (RerF) | 2.8% |
+| **Dense Network (DNN)** | 2-layer (784-800-10) | 1.6% |
+| **Support Vector Machine** | Original SVM baseline | 0.8% |
+| **K-Nearest Neighbors** | k-NN with non-linear deformation | 0.52% |
+| **Convolutional Network (CNN)** | 6-layer (784-50-100-500-1000-10-10) | 0.27% |
+| **State-of-the-Art (SOTA)** | Model ensembles & heavy data augmentation | ~0.20% |
 
 
 ## Methodology & Best Practices
@@ -30,13 +41,17 @@ The MNIST dataset consists of 60,000 training images and 10,000 test images of n
    - The **10,000 test set images** are evaluated **only once per milestone** at the very end to prevent data leakage.
 
 2. **Reproducibility**:
-   - Set fixed random seeds across library calls.
-   - Document library versions in `requirements.txt`.
+   - Set fixed random seeds across library calls (`numpy`, `tf`, `random`).
+   - Document library versions and lock dependencies using `uv` (`requirements.txt` or `uv.lock`).
 
 3. **Controlled Experimentation**:
    - Change **only one variable at a time** when comparing candidate models.
 
-4. **Empirical Rigor**:
+4. **MLOps & Experiment Tracking**:
+   - **MLflow**: Track all model runs, hyperparameters (`learning_rate`, `batch_size`, `optimizer`), metrics (`train_loss`, `val_loss`, `val_accuracy`), and epoch curves.
+   - **DVC (Data Version Control)**: Version large binary files (trained `.keras` models and preprocessed data splits) without bloating Git commit history.
+
+5. **Empirical Rigor**:
    - Support explanations using training/validation curves and quantitative metrics rather than theoretical definitions.
 
 
@@ -48,18 +63,20 @@ The MNIST dataset consists of 60,000 training images and 10,000 test images of n
 - **Baseline Classifier**: Train a `scikit-learn` baseline model (Logistic Regression or Random Forest).
 - **Validation**: Measure validation error and generate a confusion matrix to identify digit pairs most frequently confused.
 
-### Palier 2: Multi-Layer Perceptron (MLP)
+### Palier 2: Multi-Layer Perceptron (MLP) & MLflow Tracking
 - **Architectural Experimentation**: Build an MLP with Keras/TensorFlow. Compare at least **4 configurations** varying network depth/width, learning rate, batch size, or optimizer.
-- **Training Analysis**: Plot training and validation loss and error curves across epochs.
+- **Experiment Logging with MLflow**:
+  - Log hyperparameters: `mlflow.log_params({"lr": 0.001, "batch_size": 128, "optimizer": "adam"})`.
+  - Log loss & error curves across epochs using custom Keras callbacks (`mlflow.log_metric()`).
 - **Empirical Phenomena**:
   - Compare low vs. high learning rates.
   - Observe overfitting and mitigate using `EarlyStopping`, `Dropout`, or L1/L2 regularization.
   - Test the effect of `BatchNormalization` with and without normalization layers.
 - **Averaging & Scale**: Calculate iterations per epoch (e.g., 54,000 samples / batch size 128 = 422 iterations/epoch).
 - **Optimizer Evaluation**: Compare convergence speed between Adam and SGD.
-- **Final Evaluation**: Select the best configuration based on validation metrics and evaluate it **once** on the test set (Target: **< 2% test error**). Output confusion matrix and classification report.
+- **Final Evaluation**: Select the best configuration based on validation metrics logged in MLflow and evaluate it **once** on the test set (Target: **< 2% test error**). Output confusion matrix and classification report.
 
-### Palier 3: Convolutional Neural Network (CNN)
+### Palier 3: Convolutional Neural Network (CNN) & DVC Artifact Management
 - **CNN Architecture**: Construct a CNN with convolutional layers, ReLU activations, pooling layers, and dense output layers.
 - **Parameter & Speed Comparison**: Compare total parameter count (`model.summary()`) and training duration between the best MLP and CNN models.
 - **Ablation Study**: Analyze model sensitivity by removing pooling layers or adjusting filter counts.
@@ -67,7 +84,11 @@ The MNIST dataset consists of 60,000 training images and 10,000 test images of n
 - **Feature Map Inspection**: Visualize activations from the first convolutional layer to inspect low-level feature detectors.
 - **Error Analysis**: Inspect the **top 20 most severely misclassified test images**. Quantify illegible samples and ground-truth labeling errors to estimate the practical error floor.
 - **Target Evaluation**: Evaluate once on the test set (Target: **< 1% test error**).
-
+- **Model Versioning with DVC**: Track the final trained model artifact:
+  ```bash
+  dvc add models/best_model.keras
+  git add models/best_model.keras.dvc .gitignore
+  ```
 
 ### Palier 4: Flask Web Application & Unit Testing
 - **Model Persistence**: Export the top-performing model to `.keras` format and load it on web application startup.
@@ -102,21 +123,49 @@ handwritten_digits/
 │       ├── js/canvas.js
 │       └── css/style.css
 ├── models/
+│   ├── best_model.keras.dvc     # Tracked with DVC
 │   └── best_model.keras
+├── mlruns/                      # MLflow experiment tracking logs
 ├── tests/
 │   └── test_app.py
+├── .dvcignore
 ├── requirements.txt
 └── README.md
 ```
 
 
-## Installation & Getting Started
+## Execution Environment & Setup
 
-### Prerequisites
+### Option 1: Running on Google Colab (Recommended for Model Training)
+
+Google Colab provides free GPU acceleration (NVIDIA T4) which speeds up CNN training significantly.
+
+1. **Open Notebooks in Google Colab**:
+   Upload the `.ipynb` files from `notebooks/` directly to Google Colab or open them via GitHub integration.
+
+2. **Enable GPU Acceleration**:
+   Navigate to **Runtime > Change runtime type** and select **T4 GPU**.
+
+3. **Install Dependencies with `uv`**:
+   In the first notebook cell, clone the repository, install `uv`, and fast-install dependencies:
+   ```python
+   !git clone <repository-url>
+   %cd handwritten_digits
+   !pip install uv
+   !uv pip install -r requirements.txt --system
+   ```
+
+4. **Export Trained Model**:
+   After training your best MLP/CNN model in Colab, download the resulting `best_model.keras` artifact or save it directly to Google Drive (`/content/drive/MyDrive/`) to transfer it into the local `models/` directory for Flask deployment.
+
+
+### Option 2: Local Setup (For Flask App & Local Development)
+
+#### Prerequisites
 - Python 3.10+
-- Virtual environment tool (`venv` or `conda`)
+- `uv` (Fast Python package and environment manager)
 
-### Environment Setup
+#### Environment Setup with `uv`
 
 1. **Clone the repository**:
    ```bash
@@ -124,26 +173,52 @@ handwritten_digits/
    cd handwritten_digits
    ```
 
-2. **Create and activate a virtual environment**:
+2. **Create virtual environment and install dependencies**:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
+   # Create virtual environment (.venv)
+   uv venv
+
+   # Activate the virtual environment
+   source .venv/bin/activate  # Linux/macOS
+   # .venv\Scripts\activate   # Windows
+
+   # Install project dependencies with uv
+   uv pip install -r requirements.txt
    ```
 
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+
+## MLflow & DVC Usage
+
+### MLflow Experiment Tracking
+
+Start the local MLflow User Interface to compare training runs and hyperparameter metrics:
+
+```bash
+mlflow ui
+```
+Access the dashboard at `http://localhost:5000` (or `http://localhost:5001` if Flask is running on 5000) to view loss curves, compare MLP configurations, and inspect logged parameters.
+
+### Data & Model Version Control (DVC)
+
+Pull or update tracked binary models using DVC:
+
+```bash
+# Pull model artifacts from remote storage
+dvc pull
+
+# Track a new version of the trained model
+dvc add models/best_model.keras
+git add models/best_model.keras.dvc
+```
 
 
-### Running the Flask Web Application
+## Running the Flask Web Application
 
 ```bash
 python app/app.py
 ```
-Open your browser and navigate to the application URL (e.g. `http://localhost:5000`) to interact with the digit prediction interface.
+Open your browser and navigate to `http://localhost:5000` to interact with the digit prediction interface.
 
----
 
 ## Running Unit Tests
 
@@ -153,22 +228,10 @@ Execute the automated test suite using `pytest`:
 pytest tests/
 ```
 
----
 
 ## Documentation & References
 
+- **MLOps Tools**: MLflow Documentation & Tracking API, DVC (Data Version Control) Documentation.
+- **Cloud Computing**: Google Colab Setup & GPU Acceleration Guide.
 - **Official Guides**: Keras Documentation & Callbacks, scikit-learn Classification Metrics, Flask Quickstart.
 - **Technical Literature**: MNIST Database Overview (Yann LeCun et al.), Stanford CS231n: Convolutional Neural Networks, A Recipe for Training Neural Networks (Andrej Karpathy), 3Blue1Brown Neural Networks Series.
-
-
-### Reference Performance in Literature
-
-| Classifier Type | Architecture / Classifier Details | Error Rate (%) |
-| :--- | :--- | :--- |
-| **Linear Classifier** | Pairwise linear classifier | 7.6% |
-| **Random Forest** | Fast Unified Random Forests (RerF) | 2.8% |
-| **Dense Network (DNN)** | 2-layer (784-800-10) | 1.6% |
-| **Support Vector Machine** | Original SVM baseline | 0.8% |
-| **K-Nearest Neighbors** | k-NN with non-linear deformation | 0.52% |
-| **Convolutional Network (CNN)** | 6-layer (784-50-100-500-1000-10-10) | 0.27% |
-| **State-of-the-Art (SOTA)** | Model ensembles & heavy data augmentation | ~0.20% |
