@@ -1,174 +1,137 @@
 # Contributing to Handwritten Digits
-Thank you for contributing to Handwritten Digits.
 
-This document describes the development workflow, coding standards, testing requirements, and Git process used in this repository.
+Thank you for contributing to the **Handwritten Digits** project. This document describes the development workflow, coding standards, pre-commit configuration, testing requirements, and Git processes used in this repository.
 
 ---
 
-# Development Workflow
-All development must be done from feature branches based on develop.
+## 1. Development Workflow
 
-Never work directly on main.
+All development must be conducted using feature branches based on `develop`. Direct commits to `main` are prohibited.
 
-Workflow:
+### Git Branching Model
+```
+main  <--  develop  <--  feature/*
+```
 
-main
-↓
-develop
-↓
-feature/*
-↓
-develop
-↓
-main
-
-Example:
-
+### Typical Workflow:
+```bash
+# 1. Update local develop branch
 git checkout develop
-git pull
+git pull origin develop
 
+# 2. Create a new feature branch
 git checkout -b feature/my-new-feature
+```
 
 ---
 
-# Installing the Project
+## 2. Environment & Dependency Setup
 
-Clone the repository:
+This project uses **`uv`** for ultra-fast Python package and environment management.
 
+### Project Installation:
+```bash
+# Clone the repository
 git clone <repository-url>
 cd handwritten_digits
 
-Install dependencies:
-
+# Create virtual environment and install all dependencies (including dev groups)
 uv sync --all-groups
 
----
-
-# Running the Application
-Launch FLask app:
-
-uv run python app/app.py
+# Activate virtual environment
+source .venv/bin/activate  # Linux / macOS
+# .venv\Scripts\activate   # Windows
+```
 
 ---
 
-# Running Tests
+## 3. Pre-Commit Hooks & Quality Assurance
 
-Run all tests:
+This repository uses **`pre-commit`** configured via `.pre-commit-config.yaml` to automatically enforce code quality and hygiene before every Git commit.
 
-uv run pytest
-Run coverage:
+### Initializing Pre-Commit Hooks
+After installing project dependencies, you **must** install the Git pre-commit hooks:
 
-uv run pytest \
-  --cov=src \
-  --cov-report=term-missing
+```bash
+uv run pre-commit install
+```
+
+### Pre-Commit Configuration (`.pre-commit-config.yaml`)
+The project enforces the following automated checks:
+
+1. **File Structure & Hygiene (`pre-commit-hooks`)**:
+   - `trailing-whitespace`: Removes unnecessary trailing spaces.
+   - `end-of-file-fixer`: Ensures files end with a single newline.
+   - `check-yaml`, `check-toml`, `check-json`: Validates syntax of configuration files.
+   - `check-added-large-files`: Prevents accidental commits of large binary files (> 1 MB).
+
+2. **Linting & Formatting (`ruff-pre-commit`)**:
+   - `ruff`: Lints Python files with automated fixing (`--fix`).
+   - `ruff-format`: Formats Python code according to project conventions (replacing Black).
+
+### Running Pre-Commit Manually
+To test all files against pre-commit hooks at any time:
+
+```bash
+uv run pre-commit run --all-files
+```
 
 ---
 
-# Linting
+## 4. Code Quality & Formatting
 
-Check code quality:
+We use **Ruff** for both linting and formatting as configured in `pyproject.toml`.
 
+### Manual Quality Checks:
+```bash
+# Run linter
 uv run ruff check .
-Check formatting:
 
+# Apply automatic linter fixes
+uv run ruff check . --fix
+
+# Check formatting
 uv run ruff format --check .
 
+# Apply automatic formatting
+uv run ruff format .
+```
+
 ---
 
-# Before Every Commit
+## 5. Running the Application & Tests
 
-Always run:
+### Running the Flask Web Application
+```bash
+uv run python app/app.py
+```
 
-uv run ruff check .
+### Running Tests & Coverage
+All code changes must be accompanied by relevant unit or integration tests.
 
-uv run ruff format .
-
+```bash
+# Run all pytest tests
 uv run pytest
 
-Or execute:
+# Run tests with coverage report
+uv run pytest --cov=src --cov-report=term-missing
+```
 
-uv run pre-commit run --all-files
-
----
-
-# Pull Requests
-Before opening a Pull Request:
-
-    * tests must pass
-    * CI must be green
-    * Docker workflow must pass
-    * coverage must remain above the project threshold
-
-
-Recommended process:
-
-git checkout develop
-
-git checkout -b feature/my-feature
-
-# work
-
-git push origin feature/my-feature
-
-
-Create a Pull Request:
-
-feature/my-feature
-        ↓
-develop
-
----
-
-# Coding Standards
-
-    * Python 3.12+
-    * Ruff for linting
-    * Ruff Format for formatting
-    * Type hints encouraged
-    * Unit tests required for new logic
-
----
-
-# Test Structure
-
+### Test Directory Structure
+```
 tests/
-
-├── unit/ ├── integration/ └── smoke/
-
-Unit tests:
-
-    * single function
-    * isolated behavior
-
-
-Integration tests:
-
-    * multiple components working together
-
-
-Smoke tests:
-
-    * import validation
-    * application startup validation
+├── unit/         # Test isolated functions and logic
+├── integration/  # Test interactions between modules (e.g. Flask endpoints)
+└── smoke/        # Basic import and application startup checks
+```
 
 ---
 
-# Coverage Policy
+## 6. Pull Request & Commit Guidelines
 
-Current coverage target:
+Before submitting a Pull Request (PR) from `feature/*` into `develop`:
 
-50%+
-
-All new code should include tests.
-
-Coverage regressions should be avoided.
-
----
-
-# Branch Protection
-
-The main branch is protected.
-
-Changes must be merged through Pull Requests only.
-
-Direct pushes to main are prohibited.
+1. All unit and integration tests must pass (`uv run pytest`).
+2. All pre-commit hooks must pass (`uv run pre-commit run --all-files`).
+3. Code coverage must meet or exceed the project threshold (50%+).
+4. Direct pushes to `main` and `develop` are protected; merge via PR only.
