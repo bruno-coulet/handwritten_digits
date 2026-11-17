@@ -12,6 +12,10 @@ wheels/
 # Securite
 .env
 
+
+mlruns/
+.dagshub/
+
 # Caches Python
 *.pyc
 __pycache__/
