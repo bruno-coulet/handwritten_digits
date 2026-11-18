@@ -111,9 +111,9 @@ uv run dvc push
 
 Select the `.venv` Python kernel in VS Code (or open the notebook in Google Colab) and execute the notebooks sequentially:
 
-* `notebooks/01_baseline.ipynb`
-* `notebooks/02_mlp_experiments.ipynb`
-* `notebooks/03_cnn_experiments.ipynb`
+* `notebooks/1_baseline.ipynb`
+* `notebooks/2_mlp_experiments.ipynb`
+* `notebooks/3_cnn_experiments.ipynb`
 
 ### Launching the Flask Web Application
 
@@ -161,12 +161,8 @@ Strict evaluation protocol: all architecture and hyperparameter decisions are ma
 | Milestone | Model Architecture | Validation Error (%) | Test Error (%) | Parameters | Notes |
 | --- | --- | --- | --- | --- | --- |
 | **Milestone 1** | Logistic Regression (Baseline) | *TBD* | *N/A* | 7,850 | Linear pixel-wise baseline |
-| **Milestone 2** | Best MLP (`784 -> ... -> 10`) | *TBD* | *TBD* | *TBD* | Target: < 2.0% test error
-
- |
-| **Milestone 3** | Best CNN (`Conv2D + MaxPool`) | *TBD* | *TBD* | *TBD* | Target: < 1.0% test error
-
- |
+| **Milestone 2** | Best MLP (`784 -> ... -> 10`) | *TBD* | *TBD* | *TBD* | Target: < 2.0% test error   |
+| **Milestone 3** | Best CNN (`Conv2D + MaxPool`) | *TBD* | *TBD* | *TBD* | Target: < 1.0% test error   |
 
 ---
 
