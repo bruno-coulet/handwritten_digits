@@ -16,25 +16,39 @@ PACKAGE_DIR: Final[Path] = Path(__file__).resolve().parent  # .../src/handwritte
 SRC_DIR: Final[Path] = PACKAGE_DIR.parent  # .../src
 BASE_DIR: Final[Path] = SRC_DIR.parent  # .../ (Racine du projet)
 
-# Chemins des répertoires du projet
+# Directories paths
 DATA_DIR: Final[Path] = BASE_DIR / "data"
 RAW_DATA_DIR: Final[Path] = DATA_DIR / "raw"
+CLEAN_DATA_DIR: Final[Path] = DATA_DIR / "clean"
 PROCESSED_DATA_DIR: Final[Path] = DATA_DIR / "processed"
-MODELS_DIR: Final[Path] = BASE_DIR / "models"
-BEST_MODEL_PATH: Final[Path] = MODELS_DIR / "best_model.keras"
-NOTEBOOKS_DIR: Final[Path] = BASE_DIR / "notebooks"
-TESTS_DIR: Final[Path] = BASE_DIR / "tests"
+# Test set holdout directory
+HOLDOUT_DIR: Final[Path] = BASE_DIR / "holdout"
 
-# Constantes du jeu de données (MNIST)
+# dataset sizes (54k train / 6k validation / 10k test)
+TRAIN_SIZE: Final[int] = 54_000
+VAL_SIZE: Final[int] = 6_000
+TEST_SIZE: Final[int] = 10_000
+
+# MNIST dataset constants
 IMAGE_SIZE: Final[tuple[int, int]] = (28, 28)
 IMAGE_CHANNELS: Final[int] = 1
 NUM_CLASSES: Final[int] = 10
 RANDOM_SEED: Final[int] = 42
 
-# Répartition du dataset (54k train / 6k validation / 10k test)
-TRAIN_SIZE: Final[int] = 54_000
-VAL_SIZE: Final[int] = 6_000
-TEST_SIZE: Final[int] = 10_000
+MODELS_DIR: Final[Path] = BASE_DIR / "models"
+BEST_MODEL_PATH: Final[Path] = MODELS_DIR / "best_model.keras"
+NOTEBOOKS_DIR: Final[Path] = BASE_DIR / "notebooks"
+TESTS_DIR: Final[Path] = BASE_DIR / "tests"
+REPORTS_DIR: Final[Path] = BASE_DIR / "reports"
+FIGURES_DIR: Final[Path] = REPORTS_DIR / "figures"
+
+# Default hyperparameters (Keras / TensorFlow)
+DEFAULT_BATCH_SIZE: Final[int] = 128
+DEFAULT_EPOCHS: Final[int] = 30
+DEFAULT_LEARNING_RATE: Final[float] = 1e-3
+
+REPO_OWNER = "bruno-coulet"
+REPO_NAME = "handwritten_digits"
 
 # Configuration DagsHub & MLflow
 DAGSHUB_REPO_OWNER: Final[str] = os.getenv("DAGSHUB_REPO_OWNER", "bruno-coulet")
@@ -46,4 +60,10 @@ MLFLOW_TRACKING_URI: Final[str] = os.getenv(
     f"sqlite:///{MLFLOW_DB_PATH.resolve()}",
 )
 
-EXPERIMENT_NAME: str = os.getenv("MLFLOW_EXPERIMENT_NAME", "handwritten_digits_mnist")
+# MlFlow experiments names
+EXPERIMENT_BASELINE: Final[str] = "1_Baseline"
+EXPERIMENT_MLP: Final[str] = "2_MLP"
+EXPERIMENT_CNN: Final[str] = "3_CNN"
+
+# Valeur par défaut (surchargeable via variable d'environnement si besoin)
+DEFAULT_EXPERIMENT_NAME: str = os.getenv("MLFLOW_EXPERIMENT_NAME", EXPERIMENT_BASELINE)
