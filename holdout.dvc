@@ -1,0 +1,6 @@
+outs:
+- md5: 6d3901e4d521e583b175a3811da731ec.dir
+  size: 1639219
+  nfiles: 1
+  hash: md5
+  path: holdout

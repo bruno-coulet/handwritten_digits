@@ -12,6 +12,7 @@ wheels/
 # Securite
 .env
 
+*.db
 
 mlruns/
 .dagshub/
@@ -21,9 +22,10 @@ mlruns/
 __pycache__/
 
 # Donnees locales
-data/
+# data/ géré par DVC ? ? ?
 temp/
 
 # Fichiers IA (instructions locales, non versionnees en entreprise)
 CLAUDE.md
 .github/copilot-instructions.md
+/holdout
