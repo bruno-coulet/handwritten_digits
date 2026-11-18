@@ -1,15 +1,16 @@
 .
 ├── CONTRIBUTING.md
 ├── README.md
+├── README_old.md
 ├── actually.md
 ├── data
 ├── holdout
 ├── main.py
 ├── notebooks
 │   ├── 1_baseline.ipynb
-│   ├── 2_CNN.ipynb
 │   ├── 2_MLP.ipynb
-│   └── handwriten-digits.ipynb
+│   ├── 3_CNN.ipynb
+│   └── mnist_eda.ipynb
 ├── pyproject.toml
 ├── src
 │   └── handwritten_digits
@@ -18,4 +19,4 @@
 ├── temp
 └── uv.lock
 
-7 directories, 12 files
+7 directories, 13 files
