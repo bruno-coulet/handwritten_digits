@@ -1,7 +1,7 @@
 [project]
 name = "handwritten-digits"
 version = "0.1.0"
-description = "End-to-end MNIST handwritten digit recognition with MLflow, DagsHub, and Flask"
+description = "End-to-end MNIST handwritten digit recognition with Keras/TensorFlow, MLflow, DagsHub, and Flask"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -53,5 +53,5 @@ testpaths = [
     "tests",
 ]
 pythonpath = [
-    "src",
+    "app",
 ]
