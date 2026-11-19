@@ -15,6 +15,47 @@ End-to-end machine learning and deep learning project for handwritten digit clas
 
 ---
 
+## Project Architecture & MLOps Workflow
+
+```mermaid
+flowchart TB
+    subgraph DEV["Development Environments"]
+        LOCAL["Local (VS Code + uv)"]
+        COLAB["Google Colab (GPU Training)"]
+    end
+
+    subgraph REPO["Version Control & MLOps (GitHub + DagsHub)"]
+        GIT["GitHub Repository<br/>(Code, Notebooks, .dvc pointers)"]
+        DVC["DagsHub DVC Remote (S3)<br/>(data/raw, data/processed, holdout, best_model.keras)"]
+        MLFLOW["DagsHub MLflow Server<br/>(Metrics, Params, Confusion Matrices)"]
+    end
+
+    subgraph PIPELINE["ML Milestones (Strict Holdout Protocol)"]
+        M1["Milestone 1: Baseline<br/>(Logistic Regression)"]
+        M2["Milestone 2: MLP<br/>(Target: < 2% test error)"]
+        M3["Milestone 3: CNN<br/>(Target: < 1% test error)"]
+        M1 --> M2 --> M3
+    end
+
+    subgraph PROD["Deployment & Quality Assurance"]
+        FLASK["Flask Web App (app/)<br/>(Inference + Canvas UI)"]
+        TESTS["Automated QA<br/>(pytest + Ruff + pre-commit)"]
+    end
+
+    LOCAL <-->|"git push / pull"| GIT
+    COLAB <-->|"git clone / pull"| GIT
+    DEV <-->|"dvc push / pull"| DVC
+    DEV -->|"mlflow.log_*"| MLFLOW
+
+    GIT --> PIPELINE
+    PIPELINE -->|"Log runs & artifacts"| MLFLOW
+    M3 -->|"Export best_model.keras"| DVC
+    DVC -->|"Load model"| FLASK
+    GIT --> TESTS
+
+```
+---
+
 ## Repository Structure
 
 ```text
